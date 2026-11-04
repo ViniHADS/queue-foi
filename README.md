@@ -12,7 +12,7 @@ Cada chamado no seu lugar. Projeto educacional do Checkpoint 6 de Pensamento Com
 
 Aplicação em Python com Streamlit e um único arquivo CSS, sem API externa ou banco de dados. Lê `chamados.json` e oferece dois menus:
 
-- **Painel de métricas:** total de chamados, chamados por impacto, gráfico por tipo e média do tempo estimado de resolução e total de setores distintos atingidos.
+- **Painel de métricas:** total de chamados, chamados por impacto, gráfico por tipo, média do tempo estimado de resolução e total de setores distintos atingidos.
 - **Fila de atendimento:** próximo chamado destacado e demais chamados em ordem, com posição, ID, título, tipo, impacto, usuários afetados, quantidade e nomes dos setores e abertura.
 
 A base é apenas consultada. Esta versão não cadastra, altera ou conclui chamados. Os dados e textos usam UTF-8 e a interface está em português brasileiro.
@@ -34,6 +34,48 @@ Se dois chamados de impacto alto afetam 20 usuários cada, aquele que atinge tr�
 O total de chamados e as contagens por impacto são indicadores gerais; não alteram a prioridade individual. O total de setores distintos considera cada nome de setor uma vez em toda a base, mesmo que apareça em vários chamados. Não calculamos pessoas únicas, pois não há identificação de todos os usuários afetados para eliminar sobreposições.
 
 Esta regra não garante que um chamado de impacto baixo ultrapasse um de impacto alto após muito tempo de espera. É uma decisão simplificada para a atividade. Não usamos o tempo estimado como prioridade, pois uma resolução rápida não implica maior urgência.
+
+## Como a solução funciona
+
+O fluxo do programa é: **leitura do JSON → validação → ordenação e cálculo das métricas → apresentação no Streamlit**.
+
+### Leitura e estruturas de dados
+
+A função `carregar_chamados()`, em `dados.py`, abre o arquivo com `encoding="utf-8"` e usa `json.load()` para converter seu conteúdo em estruturas do Python. A base vira uma lista, cada chamado vira um dicionário e os campos de setores e recursos permanecem como listas. O arquivo original não é modificado.
+
+Antes de devolver a base, essa função chama `validar_chamados()`. Se houver erro, a interface apresenta a mensagem e interrompe os cálculos, evitando mostrar uma fila incompleta.
+
+### Funções e responsabilidades
+
+| Função | Responsabilidade |
+|---|---|
+| `carregar_chamados()` | Ler o JSON, tratar falhas de leitura e devolver a base validada. |
+| `validar_chamados()` | Conferir a estrutura, os campos obrigatórios, os tipos e os valores. |
+| `chave_prioridade()` | Representar os cinco critérios de comparação de cada chamado. |
+| `ordenar_chamados()` | Criar uma nova lista na ordem de atendimento. |
+| `calcular_metricas()` | Percorrer os chamados e devolver as contagens, a média e o total de setores distintos. |
+
+Essa separação permite testar a lógica sem depender da interface. O arquivo `streamlit_app.py` chama essas funções e apresenta seus resultados nos dois menus.
+
+### Como a ordenação é feita
+
+A função `ordenar_chamados()` usa `sorted(chamados, key=chave_prioridade)`. O resultado é uma nova lista; a ordem da lista original é preservada.
+
+A chave de cada chamado é uma tupla com impacto, usuários, setores distintos, abertura e ID. O Python compara esses valores da esquerda para a direita, consultando o próximo somente em caso de empate. Alto, médio e baixo recebem os valores 0, 1 e 2. Como `sorted` ordena de forma crescente, as quantidades de usuários e setores entram com sinal negativo para que as maiores apareçam primeiro. A abertura é convertida em `datetime`, permitindo comparar data e horário corretamente.
+
+Usamos `set` para contar setores sem repetições. Isso não altera a lista de setores do JSON. A estratégia usa comparação por critérios, sem somar pesos ou pontuações.
+
+### Como as métricas são calculadas
+
+| Métrica | Cálculo |
+|---|---|
+| Total de chamados | `len(chamados)`. |
+| Chamados por impacto | Um dicionário começa com zero para alto, médio e baixo; cada registro incrementa sua categoria. |
+| Chamados por tipo | Um dicionário acumula uma unidade para cada ocorrência de um tipo. |
+| Resolução estimada média | Soma de `tempo_estimado_min` dividida pelo total de chamados. |
+| Setores distintos atingidos | União dos nomes de setores em um `set`, seguida da contagem com `len`. |
+
+Se a base estiver vazia, a função devolve média zero para evitar divisão por zero, e a interface mostra uma mensagem em vez dos indicadores. O Streamlit desenha o gráfico com as contagens calculadas pelo programa; ele não define a regra de triagem.
 
 ## Organização
 
