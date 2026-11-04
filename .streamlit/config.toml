@@ -1,0 +1,8 @@
+# O tema mantém os componentes nativos alinhados à identidade do projeto.
+[theme]
+base = "light"
+primaryColor = "#2457C5"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F2F5FA"
+textColor = "#172B4D"
+font = "sans-serif"

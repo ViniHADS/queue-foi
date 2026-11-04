@@ -1,0 +1,33 @@
+/* Classes próprias: evitamos depender da estrutura interna do Streamlit. */
+.qf-cabecalho {
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    border-radius: 16px;
+    background: #132b54;
+    color: #ffffff;
+}
+.qf-cabecalho h1 { color: #ffffff; margin: 0.5rem 0; }
+.qf-cabecalho p { margin: 0; color: #dbe7ff; }
+.qf-etiqueta { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; }
+
+/* O cartão destaca a primeira posição. O impacto tem texto além da cor. */
+.qf-proximo {
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border: 1px solid #c7d6f1;
+    border-left: 5px solid #2457c5;
+    border-radius: 12px;
+    background: #edf3ff;
+    color: #132b54;
+}
+.qf-proximo h2 { color: #132b54; margin: 0.6rem 0 1rem; }
+.qf-proximo p { margin: 0.75rem 0 0; }
+.qf-impacto { padding: 0.25rem 0.65rem; border-radius: 6px; font-weight: 600; }
+.qf-alto { background: #ffe2e2; color: #922020; }
+.qf-medio { background: #fff0cc; color: #775000; }
+.qf-baixo { background: #d8f2e4; color: #185737; }
+
+/* Menos espaço no celular, sem alterar os componentes nativos. */
+@media (max-width: 600px) {
+    .qf-cabecalho, .qf-proximo { padding: 1rem; }
+}
